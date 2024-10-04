@@ -338,7 +338,7 @@ local function HealthUpCallback(descObj)
 		
 		-- remove HealingRed lines entirely for Soul/Black/None health chars
 		descObj.Description = descObj.Description .. "#" -- gsub finds final lines better if the desc ends with a line break
-		if heartType == "Soul" or heartType == "Black" or heartType == "None" then
+		if EID.HealthTypesWithoutHealing[heartType] then
 			-- Find any lines containing {{HealingRed}} or {{HealingHalfRed}} and remove the line
 			descObj.Description = descObj.Description:gsub("{{HealingRed}}(.-)#", "")
 			descObj.Description = descObj.Description:gsub("{{HealingHalfRed}}(.-)#", "")
@@ -347,7 +347,7 @@ local function HealthUpCallback(descObj)
 		-- check if we just made the description blank
 		if descObj.Description:gsub("#", "") == "" then
 			local noEffectStr = EID:getDescriptionEntry("ConditionalDescs", "No Effect")
-			descObj.Description = "{{Player" .. playerType .. "}} " .. EID:ReplaceVariableStr(noEffectStr, "{{NameOnlyI" .. playerType .. "}}")
+			descObj.Description = EID:GetPlayerIcon(playerType) .. " " .. EID:ReplaceVariableStr(noEffectStr, EID:getPlayerName(playerType))
 		end
 	end
 	
@@ -355,7 +355,8 @@ local function HealthUpCallback(descObj)
 	-- todo: this simple check could have false positives (i.e. Yum Heart is identical for Soul and Black, but this thinks they'll be different)
 	for i = 1, #EID.coopAllPlayers do
 		local t = EID.coopAllPlayers[i]:GetPlayerType()
-		if EID.CharacterToHeartType[t] ~= heartType then
+		local playerHeartType = EID.CharacterToHeartType[t] or "Red"
+		if playerHeartType ~= heartType then
 			table.insert(EID.DifferentEffectPlayers, t)
 		end
 	end
@@ -838,7 +839,7 @@ if EID.isRepentance then
 	
 	-- Handle Tainted Cain pedestals
 	local function TaintedCainPedestalCallback(descObj)
-		if EID.isDeathCertRoom or not descObj.Entity or not EID.Config["DisplayTCainSalvageResults"] then return descObj end
+		if game.Challenge == Challenge.CHALLENGE_CANTRIPPED or EID.isDeathCertRoom or not descObj.Entity or not EID.Config["DisplayTCainSalvageResults"] then return descObj end
 		local item = EID.itemConfig:GetCollectible(descObj.ObjSubType)
 		if (item.Tags and item.Tags & ItemConfig.TAG_QUEST == ItemConfig.TAG_QUEST) then return descObj end
 		
@@ -1083,7 +1084,7 @@ local function CoopDifferentEffectCallback(descObj)
 	local differentEffectText = EID:getDescriptionEntry("ConditionalDescs", "Different Effect")
 	for _,v in ipairs(EID.DifferentEffectPlayers) do
 		if not displayedChars[v] then
-			descObj.Description = descObj.Description .. "#{{Player" .. v .. "}} " .. EID:ReplaceVariableStr(differentEffectText, "{{NameOnlyI" .. v .. "}}")
+			descObj.Description = descObj.Description .. "#" .. EID:GetPlayerIcon(v) .. " " .. EID:ReplaceVariableStr(differentEffectText, EID:getPlayerName(v))
 		end
 		displayedChars[v] = true
 	end

@@ -10,8 +10,8 @@ EID.isRepentance = REPENTANCE -- REPENTANCE variable can be altered by any mod, 
 require("eid_config")
 EID.Config = EID.UserConfig
 EID.Config.Version = "3.2" -- note: changing this will reset everyone's settings to default!
-EID.ModVersion = 4.81
-EID.ModVersionCommit = "a6f5953"
+EID.ModVersion = 4.82
+EID.ModVersionCommit = "a697585"
 EID.DefaultConfig.Version = EID.Config.Version
 EID.isHidden = false
 EID.player = nil -- The primary Player Entity of Player 1
@@ -841,7 +841,7 @@ function EID:renderIndicator(entity, playerNum)
 		return
 	end
 	local repDiv = 1
-	local entityPos = Isaac.WorldToScreen(entity.Position)
+	local entityPos = Isaac.WorldToScreen(entity.PositionOffset and entity.Position + entity.PositionOffset or entity.Position)
 	local ArrowOffset = Vector(0, -35)
 	if entity.Variant == 100 and not entity:ToPickup():IsShopItem() then
 		ArrowOffset = Vector(0, -62)
@@ -853,8 +853,6 @@ function EID:renderIndicator(entity, playerNum)
 	if EID.isRepentance and not EID:IsGridEntity(entity) then
 		if entity.Variant == 100 and EID:PlayersHaveCollectible(CollectibleType.COLLECTIBLE_FLIP) and EID:getEntityData(entity, "EID_FlipItemID") then
 			entityPos = entityPos + Vector(2.5,2.5)
-		elseif entity.Type == 6 and entity.Variant == 16 then
-			entityPos = entityPos + Vector(0,-5)
 		end
 	end
 	local sprite = nil
